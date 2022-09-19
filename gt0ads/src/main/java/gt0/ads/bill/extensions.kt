@@ -1,6 +1,6 @@
 @file:Suppress("unused")
 
-package gt0.ads.billing
+package gt0.ads.bill
 
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.Purchase

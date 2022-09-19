@@ -1,4 +1,4 @@
-package gt0.ads.helper
+package gt0.ads.utils
 
 import android.app.Application
 import com.google.android.gms.ads.AdListener
@@ -8,18 +8,17 @@ import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.interstitial.InterstitialAd
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 import com.google.android.gms.ads.nativead.NativeAd
-import com.google.android.gms.ads.rewarded.RewardedAd
 import com.google.android.gms.ads.rewardedinterstitial.RewardedInterstitialAd
 import com.google.android.gms.ads.rewardedinterstitial.RewardedInterstitialAdLoadCallback
 import com.unity3d.ads.IUnityAdsLoadListener
 import com.unity3d.ads.UnityAds
 import kotlinx.coroutines.*
 
-class LoadHelper(private val app: Application) {
+class AdServeLoadHelper(private val application: Application) {
     private var isAdmob: Boolean = true
-    private var interReloadAttempts = 0
-    private var rewardReloadAttempts = 0
-    private var reloadScope = CoroutineScope(Dispatchers.Main + Job())
+    private var interAttempts = 0
+    private var rewardAttempts = 0
+    private var scope = CoroutineScope(Dispatchers.Main + Job())
 
     fun setIsAdmob(admob: Boolean) {
         isAdmob = admob
@@ -27,26 +26,26 @@ class LoadHelper(private val app: Application) {
 
     fun loadInter(adUnit: String, interResult: (inter: InterstitialAd?) -> Unit) {
         InterstitialAd.load(
-            app,
+            application,
             adUnit,
             AdRequest.Builder().build(),
             object : InterstitialAdLoadCallback() {
                 override fun onAdFailedToLoad(error: LoadAdError) {
                     super.onAdFailedToLoad(error)
                     interResult.invoke(null)
-                    reloadScope.launch {
+                    scope.launch {
                         delay(3000)
-                        if (interReloadAttempts >= 3) {
+                        if (interAttempts >= 3) {
                             return@launch
                         }
-                        interReloadAttempts += 1
+                        interAttempts += 1
                         loadInter(adUnit, interResult)
                     }
                 }
 
                 override fun onAdLoaded(inter: InterstitialAd) {
                     super.onAdLoaded(inter)
-                    interReloadAttempts = 0
+                    interAttempts = 0
                     interResult.invoke(inter)
                 }
             })
@@ -54,25 +53,25 @@ class LoadHelper(private val app: Application) {
 
     fun loadReward(adUnit: String, rewardResult: (reward: RewardedInterstitialAd?) -> Unit) {
         RewardedInterstitialAd.load(
-            app,
+            application,
             adUnit,
             AdRequest.Builder().build(),
             object : RewardedInterstitialAdLoadCallback() {
                 override fun onAdLoaded(p0: RewardedInterstitialAd) {
                     super.onAdLoaded(p0)
-                    rewardReloadAttempts = 0
+                    rewardAttempts = 0
                     rewardResult.invoke(p0)
                 }
 
                 override fun onAdFailedToLoad(p0: LoadAdError) {
                     super.onAdFailedToLoad(p0)
                     rewardResult.invoke(null)
-                    reloadScope.launch {
+                    scope.launch {
                         delay(2000)
-                        if (rewardReloadAttempts >= 3) {
+                        if (rewardAttempts >= 3) {
                             return@launch
                         }
-                        rewardReloadAttempts += 1
+                        rewardAttempts += 1
                         loadReward(adUnit, rewardResult)
                     }
 
@@ -81,7 +80,7 @@ class LoadHelper(private val app: Application) {
     }
 
     fun loadNativeAd(adUnit: String, nativeAdResult: (nativeAd: NativeAd?) -> Unit) {
-        AdLoader.Builder(app, adUnit)
+        AdLoader.Builder(application, adUnit)
             .forNativeAd {
                 nativeAdResult.invoke(it)
             }
@@ -93,10 +92,10 @@ class LoadHelper(private val app: Application) {
             }).build().loadAd(AdRequest.Builder().build())
     }
 
-    fun loadUnityInter(adUnit: String, interResult: () -> Unit){
+    fun loadInterUnity(adUnit: String, interResult: () -> Unit){
         UnityAds.load(adUnit, object : IUnityAdsLoadListener {
             override fun onUnityAdsAdLoaded(placementId: String?) {
-                interReloadAttempts = 0
+                interAttempts = 0
                 interResult.invoke()
             }
 
@@ -105,22 +104,22 @@ class LoadHelper(private val app: Application) {
                 error: UnityAds.UnityAdsLoadError?,
                 message: String?
             ) {
-                reloadScope.launch {
+                scope.launch {
                     delay(3000)
-                    if (interReloadAttempts >= 3) {
+                    if (interAttempts >= 3) {
                         return@launch
                     }
-                    interReloadAttempts += 1
-                    loadUnityInter(adUnit, interResult)
+                    interAttempts += 1
+                    loadInterUnity(adUnit, interResult)
                 }
             }
         })
     }
 
-    fun loadUnityReward(adUnit: String, function: () -> Unit) {
+    fun loadRewardUnity(adUnit: String, function: () -> Unit) {
         UnityAds.load(adUnit, object : IUnityAdsLoadListener {
             override fun onUnityAdsAdLoaded(placementId: String?) {
-                rewardReloadAttempts = 0
+                rewardAttempts = 0
                 function.invoke()
             }
 
@@ -129,13 +128,13 @@ class LoadHelper(private val app: Application) {
                 error: UnityAds.UnityAdsLoadError?,
                 message: String?
             ) {
-                reloadScope.launch {
+                scope.launch {
                     delay(3000)
-                    if (rewardReloadAttempts >= 3) {
+                    if (rewardAttempts >= 3) {
                         return@launch
                     }
-                    rewardReloadAttempts += 1
-                    loadUnityReward(adUnit, function)
+                    rewardAttempts += 1
+                    loadRewardUnity(adUnit, function)
                 }
             }
         })

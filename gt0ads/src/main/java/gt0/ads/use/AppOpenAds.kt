@@ -13,7 +13,7 @@ import com.google.android.gms.ads.FullScreenContentCallback
 import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.appopen.AppOpenAd
 
-class AppOpenManager(private val app: Application, private val unit: String) :
+class AppOpenAds(private val application: Application, private val unit: String) :
     Application.ActivityLifecycleCallbacks,
     LifecycleObserver {
 
@@ -29,7 +29,7 @@ class AppOpenManager(private val app: Application, private val unit: String) :
         get() = appOpenAd != null
 
     init {
-        app.registerActivityLifecycleCallbacks(this)
+        application.registerActivityLifecycleCallbacks(this)
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
     }
 
@@ -49,7 +49,7 @@ class AppOpenManager(private val app: Application, private val unit: String) :
         }
         val request = adRequest
         AppOpenAd.load(
-            app,
+            application,
             unit, request,
             AppOpenAd.APP_OPEN_AD_ORIENTATION_PORTRAIT, loadCallback!!
         )

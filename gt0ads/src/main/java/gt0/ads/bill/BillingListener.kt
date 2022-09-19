@@ -1,7 +1,6 @@
-package gt0.ads.billing
+package gt0.ads.bill
 
 import com.android.billingclient.api.*
-import gt0.ads.billing.BillingEvent
 
 interface BillingListener {
     /**

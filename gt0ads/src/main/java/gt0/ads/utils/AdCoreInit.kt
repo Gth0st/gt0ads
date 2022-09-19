@@ -1,4 +1,4 @@
-package gt0.ads.helper
+package gt0.ads.utils
 
 import android.app.Application
 import android.content.pm.ApplicationInfo
@@ -7,24 +7,24 @@ import android.util.Log
 import com.google.android.gms.ads.MobileAds
 import com.unity3d.ads.IUnityAdsInitializationListener
 import com.unity3d.ads.UnityAds
-import gt0.ads.callbacks.OnReInit
-import gt0.ads.configs.AdUnit
+import gt0.ads.interfaces.OnAdvertisingCoreInitialized
+import gt0.ads.api_configurations.AdUnitsConfiguration
 
-object AdInitializer {
-    fun initAds(app: Application, adUnit: AdUnit, onReInit: OnReInit) {
-        if (adUnit.admob) {
+object AdCoreInit {
+    fun initAdCore(application: Application, adUnitsConfiguration: AdUnitsConfiguration, onAdvertisingCoreInitialized: OnAdvertisingCoreInitialized) {
+        if (adUnitsConfiguration.isAdmobProvider) {
             try {
-                val applicationInfo: ApplicationInfo = app.packageManager.getApplicationInfo(
-                    app.packageName,
+                val applicationInfo: ApplicationInfo = application.packageManager.getApplicationInfo(
+                    application.packageName,
                     PackageManager.GET_META_DATA
                 )
                 applicationInfo.metaData.putString(
                     "com.google.android.gms.ads.APPLICATION_ID",
-                    adUnit.app
+                    adUnitsConfiguration.app_id
                 )
-                MobileAds.initialize(app) {
-                    onReInit.onAdReInit()
-                    Log.e("UAN", "UAN Initialized Successfully")
+                MobileAds.initialize(application) {
+                    onAdvertisingCoreInitialized.onAdvertisingCoreInitialized()
+                    Log.e("GT0ADS", "GT0ADS Initialized Successfully")
                 }
             } catch (e: PackageManager.NameNotFoundException) {
                 e.printStackTrace()
@@ -33,13 +33,13 @@ object AdInitializer {
             }
         } else {
             UnityAds.initialize(
-                app,
-                adUnit.app,
+                application,
+                adUnitsConfiguration.app_id,
                 false,
                 object : IUnityAdsInitializationListener {
                     override fun onInitializationComplete() {
-                        onReInit.onAdReInit()
-                        Log.e("UAN", "UAN Unity Initialized Successfully")
+                        onAdvertisingCoreInitialized.onAdvertisingCoreInitialized()
+                        Log.e("GT0ADS", "GT0ADS Unity Initialized Successfully")
                     }
 
                     override fun onInitializationFailed(

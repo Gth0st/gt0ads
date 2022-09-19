@@ -1,4 +1,4 @@
-package gt0.ads.billing
+package gt0.ads.bill
 
 import android.text.TextUtils
 import android.util.Base64

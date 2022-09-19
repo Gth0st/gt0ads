@@ -1,24 +1,23 @@
-package gt0.ads.net
+package gt0.ads.network
 
 import com.google.gson.Gson
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
-import gt0.ads.configs.AdUnit
+import gt0.ads.api_configurations.AdUnitsConfiguration
 import java.lang.Exception
 import javax.security.auth.callback.Callback
 
-class UnitsRequest {
-    private var retries = 0
+class AdUnitsServe {
+    private var retriesAds = 0
     private var url: String = ""
 
-
-    fun setupUnitsUrl(unitsUrl: String) {
+    fun setAdUnitsUrl(unitsUrl: String) {
         this.url = unitsUrl
     }
 
-    fun request(result: (adUnit: AdUnit?) -> Unit) {
-        if (retries > 3) {
+    fun req(result: (adUnitsConfiguration: AdUnitsConfiguration?) -> Unit) {
+        if (retriesAds > 3) {
             result.invoke(null)
             return
         }
@@ -35,9 +34,9 @@ class UnitsRequest {
                 override fun onResponse(call: okhttp3.Call, response: Response) {
                     if (response.isSuccessful) {
                         try {
-                            val units = Gson().fromJson(response.body?.string(), AdUnit::class.java)
+                            val units = Gson().fromJson(response.body?.string(), AdUnitsConfiguration::class.java)
                             result.invoke(units)
-                            retries = 0
+                            retriesAds = 0
                         } catch (e: Exception) {
                             result.invoke(null)
                         }
@@ -50,10 +49,10 @@ class UnitsRequest {
         }
     }
 
-    fun retry(result: (adUnit: AdUnit?) -> Unit) {
+    fun retryReq(result: (adUnitsConfiguration: AdUnitsConfiguration?) -> Unit) {
         if (url.contains("https://")) {
-            retries += 1
-            request(result)
+            retriesAds += 1
+            req(result)
         }
     }
 }
