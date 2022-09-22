@@ -66,7 +66,7 @@ class GtGtAdImpl(private val app: Application) : GtAd, OnAdvertisingCoreInitiali
         action: () -> Unit,
         isPrem: Boolean
     ) {
-        this.isPrem = isPrem
+        this.isPrem = DB(app).isPremium
         adUnitsServe?.setAdUnitsUrl(id)
         adUnitsServe?.req { adUnit ->
             if (adUnit != null) {
@@ -96,8 +96,10 @@ class GtGtAdImpl(private val app: Application) : GtAd, OnAdvertisingCoreInitiali
                             Log.d("GT0ADS", "JOB CANCEL TIMEOUT")
                         }
                         launch(job) {
-                            loadHelper.loadInter(adsUnitUtil?.adUnit(AdUnitType.INTER)
-                                .toString()) { inter ->
+                            loadHelper.loadInter(
+                                adsUnitUtil?.adUnit(AdUnitType.INTER)
+                                    .toString()
+                            ) { inter ->
                                 if (inter == null) {
                                     Log.d("GT0ADS", "SPLASH INTER IS NULL")
                                     scope.launch {
@@ -181,22 +183,23 @@ class GtGtAdImpl(private val app: Application) : GtAd, OnAdvertisingCoreInitiali
             if (it) {
                 if (adsUnitUtil?.serverProviderIsAdmob() == true) {
                     if (lInterstitial != null) {
-                        lInterstitial?.fullScreenContentCallback = object : FullScreenContentCallback() {
-                            override fun onAdDismissedFullScreenContent() {
-                                super.onAdDismissedFullScreenContent()
-                                lInterstitial?.fullScreenContentCallback = null
-                                lInterstitial = null
-                                onAdClosed.invoke()
-                                loadInterstitialAd()
-                            }
+                        lInterstitial?.fullScreenContentCallback =
+                            object : FullScreenContentCallback() {
+                                override fun onAdDismissedFullScreenContent() {
+                                    super.onAdDismissedFullScreenContent()
+                                    lInterstitial?.fullScreenContentCallback = null
+                                    lInterstitial = null
+                                    onAdClosed.invoke()
+                                    loadInterstitialAd()
+                                }
 
-                            override fun onAdFailedToShowFullScreenContent(p0: AdError) {
-                                super.onAdFailedToShowFullScreenContent(p0)
-                                lInterstitial?.fullScreenContentCallback = null
-                                lInterstitial = null
-                                loadInterstitialAd()
+                                override fun onAdFailedToShowFullScreenContent(p0: AdError) {
+                                    super.onAdFailedToShowFullScreenContent(p0)
+                                    lInterstitial?.fullScreenContentCallback = null
+                                    lInterstitial = null
+                                    loadInterstitialAd()
+                                }
                             }
-                        }
                         lInterstitial?.show(activity)
                     } else {
                         onAdClosed.invoke()
@@ -248,22 +251,23 @@ class GtGtAdImpl(private val app: Application) : GtAd, OnAdvertisingCoreInitiali
                 if (adsUnitUtil?.serverProviderIsAdmob() == true) {
                     var rewarded = false
                     if (lRewardedAd != null) {
-                        lRewardedAd?.fullScreenContentCallback = object : FullScreenContentCallback() {
-                            override fun onAdDismissedFullScreenContent() {
-                                super.onAdDismissedFullScreenContent()
-                                lRewardedAd = null
-                                lRewardedAd?.fullScreenContentCallback = null
-                                onRewardClosed.invoke(rewarded)
-                                loadRewardedAd()
-                            }
+                        lRewardedAd?.fullScreenContentCallback =
+                            object : FullScreenContentCallback() {
+                                override fun onAdDismissedFullScreenContent() {
+                                    super.onAdDismissedFullScreenContent()
+                                    lRewardedAd = null
+                                    lRewardedAd?.fullScreenContentCallback = null
+                                    onRewardClosed.invoke(rewarded)
+                                    loadRewardedAd()
+                                }
 
-                            override fun onAdFailedToShowFullScreenContent(p0: AdError) {
-                                super.onAdFailedToShowFullScreenContent(p0)
-                                lRewardedAd = null
-                                lRewardedAd?.fullScreenContentCallback = null
-                                loadRewardedAd()
+                                override fun onAdFailedToShowFullScreenContent(p0: AdError) {
+                                    super.onAdFailedToShowFullScreenContent(p0)
+                                    lRewardedAd = null
+                                    lRewardedAd?.fullScreenContentCallback = null
+                                    loadRewardedAd()
+                                }
                             }
-                        }
                         lRewardedAd?.show(activity) {
                             rewarded = true
                         }
