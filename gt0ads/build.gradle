@@ -11,6 +11,7 @@ android {
         targetSdk 32
         consumerProguardFiles "consumer-rules.pro"
     }
+    
 
     buildTypes {
         debug {
